@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from datetime import datetime, timedelta
 import numpy as np
-from sklearn.linear_model import LinearRegression
+from sklearn import linear_model
 from config import data_base_path
 import random
 import requests
@@ -143,7 +143,7 @@ def train_model(token):
     y = df['close'].values  # Sử dụng giá đóng cửa làm mục tiêu
 
     # Khởi tạo mô hình Linear Regression
-    model = LinearRegression()
+    model = linear_model.LassoLars(alpha=.1)
     model.fit(X, y)  # Huấn luyện mô hình
 
     # Dự đoán giá tiếp theo
@@ -151,7 +151,7 @@ def train_model(token):
     predicted_price = model.predict(next_time_index)[0]  # Dự đoán giá
 
     # Xác định khoảng dao động xung quanh giá dự đoán
-    fluctuation_range = 0.001 * predicted_price  # Lấy 0.1% của giá dự đoán làm khoảng dao động
+    fluctuation_range = 0.0025 * predicted_price  # Lấy 0.1% của giá dự đoán làm khoảng dao động
     min_price = predicted_price - fluctuation_range
     max_price = predicted_price + fluctuation_range
 
