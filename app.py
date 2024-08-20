@@ -4,7 +4,7 @@ from model import download_data, format_data, train_model
 import os
 from model import forecast_price
 
-API_PORT = int(os.environ.get('API_PORT', 5000))
+API_PORT = int(os.environ.get('API_PORT', 8013))
 
 app = Flask(__name__)
 
