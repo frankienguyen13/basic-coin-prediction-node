@@ -7,6 +7,9 @@ from config import data_base_path
 import random
 import requests
 import retrying
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
 
 forecast_price = {}
 
@@ -139,24 +142,28 @@ def train_model(token):
     X = np.array(range(len(df))).reshape(-1, 1)  # Sử dụng chỉ số thời gian làm đặc trưng
     y = df['close'].values  # Sử dụng giá đóng cửa làm mục tiêu
 
-    # Khởi tạo mô hình Linear Regression
-    model = linear_model.LassoLars(alpha=.1)
-    model.fit(X, y)  # Huấn luyện mô hình
+   # Reshape data for LSTM [samples, time steps, features]
+    X = X.reshape((X.shape[0], 1, X.shape[1]))
 
-    # Dự đoán giá tiếp theo
-    next_time_index = np.array([[len(df)]])  # Giá trị thời gian tiếp theo
-    predicted_price = model.predict(next_time_index)[0]  # Dự đoán giá
+    # Initialize and train the LSTM model
+    model = Sequential()
+    model.add(LSTM(50, activation='relu', input_shape=(1, 1)))
+    model.add(Dense(1))
+    model.compile(optimizer='adam', loss='mse')
+    model.fit(X, y, epochs=200, verbose=0)
+    next_time_index = np.array([[len(df)]]).reshape((1, 1, 1))
+    predicted_price = model.predict(next_time_index)[0][0]
 
     # Xác định khoảng dao động xung quanh giá dự đoán
-    fluctuation_range = 0.0025 * predicted_price  # Lấy 0.25% của giá dự đoán làm khoảng dao động
-    min_price = predicted_price - fluctuation_range
-    max_price = predicted_price + fluctuation_range
+    #fluctuation_range = 0.00125 * predicted_price  # Lấy 0.25% của giá dự đoán làm khoảng dao động
+    #min_price = predicted_price - fluctuation_range
+    #max_price = predicted_price + fluctuation_range
 
     # Chọn ngẫu nhiên một giá trị trong khoảng dao động
-    price_predict = random.uniform(min_price, max_price)
-    forecast_price[token] = price_predict
+    #price_predict = random.uniform(min_price, max_price)
+    forecast_price[token] = predicted_price
 
-    print(f"Predicted_price: {predicted_price}, Min_price: {min_price}, Max_price: {max_price}")
+    print(f"Predicted_price: {predicted_price}")
     print(f"Forecasted price for {token}: {forecast_price[token]}")
 
 def update_data():
