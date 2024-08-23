@@ -32,8 +32,8 @@ services:
       inference:
         condition: service_healthy
     
-  worker:
-    container_name: allora-worker-1
+  worker-sunny54:
+    container_name: allora-worker-54
     image: alloranetwork/allora-offchain-node:latest
     volumes:
       - ./worker-data:/data
@@ -42,7 +42,20 @@ services:
       inference:
         condition: service_healthy
     env_file:
-      - ./worker-data/env_file
+      - ./worker-data/env_file54
+    entrypoint: ["/node/allora_offchain_node"]
+
+  worker-sunny55:
+    container_name: allora-worker-55
+    image: alloranetwork/allora-offchain-node:latest
+    volumes:
+      - ./worker-data:/data55
+    working_dir: /data55
+    depends_on:
+      inference:
+        condition: service_healthy
+    env_file:
+      - ./worker-data/env_file55
     entrypoint: ["/node/allora_offchain_node"]
 
 volumes:

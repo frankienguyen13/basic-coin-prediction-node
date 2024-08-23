@@ -146,12 +146,12 @@ def train_model(token):
     next_time_index = np.array([[len(df)]])
     predicted_price = model.predict(next_time_index)[0]
 
-    fluctuation_range = 0.001 * predicted_price
-    min_price = predicted_price - fluctuation_range
-    max_price = predicted_price + fluctuation_range
-    price_predict = random.uniform(min_price, max_price)
-    forecast_price[token] = price_predict
-    print(f"Predicted_price: {predicted_price}, Min_price: {min_price}, Max_price: {max_price}")
+    # fluctuation_range = 0.001 * predicted_price
+    # min_price = predicted_price - fluctuation_range
+    # max_price = predicted_price + fluctuation_range
+    # price_predict = random.uniform(min_price, max_price)
+    forecast_price[token] = predicted_price
+    #print(f"Predicted_price: {predicted_price}, Min_price: {min_price}, Max_price: {max_price}")
     print(f"Forecasted price for {token}: {forecast_price[token]}")
 
 def update_data():
