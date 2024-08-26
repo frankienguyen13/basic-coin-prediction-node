@@ -7,7 +7,8 @@ from config import data_base_path
 import random
 import requests
 import retrying
-from sklearn.svm import SVR
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
 
 forecast_price = {}
 
@@ -140,11 +141,15 @@ def train_model(token):
     X = np.array(range(len(df))).reshape(-1, 1)  # Sử dụng chỉ số thời gian làm đặc trưng
     y = df['close'].values  # Sử dụng giá đóng cửa làm mục tiêu
 
+    X, X_test, y, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    
      # Initialize and train the SVR model
-    model = SVR(kernel='rbf')
+    model= linear_model.Ridge(alpha=1.0)
+    #model = SVR(kernel='rbf')
     model.fit(X, y)
-    next_time_index = np.array([[len(df)]])
-    predicted_price = model.predict(next_time_index)[0]
+    
+    #next_time_index = np.array([[len(df)]])
+    predicted_price = model.predict(X_test)
 
     # fluctuation_range = 0.001 * predicted_price
     # min_price = predicted_price - fluctuation_range
@@ -153,6 +158,8 @@ def train_model(token):
     forecast_price[token] = predicted_price
     #print(f"Predicted_price: {predicted_price}, Min_price: {min_price}, Max_price: {max_price}")
     print(f"Forecasted price for {token}: {forecast_price[token]}")
+    mse = mean_squared_error(y_test, y_pred)
+    print(f"Mean Squared Error (Ridge): {mse:.2f}")
 
 def update_data():
     tokens = ["ETH", "BTC", "SOL", "BNB", "ARB"]
