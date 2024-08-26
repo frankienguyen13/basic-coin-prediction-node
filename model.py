@@ -143,7 +143,7 @@ def train_model(token):
     y = df['close'].values  # Sử dụng giá đóng cửa làm mục tiêu
 
     # Khởi tạo mô hình Linear Regression
-    model = linear_model.LassoLars(alpha=.1)
+    model = linear_model.LassoLars(alpha=0.1)
     model.fit(X, y)  # Huấn luyện mô hình
 
     # Dự đoán giá tiếp theo
@@ -151,19 +151,19 @@ def train_model(token):
     predicted_price = model.predict(next_time_index)[0]  # Dự đoán giá
 
     # Xác định khoảng dao động xung quanh giá dự đoán
-    fluctuation_range = 0.0025 * predicted_price  # Lấy 0.1% của giá dự đoán làm khoảng dao động
-    min_price = predicted_price - fluctuation_range
-    max_price = predicted_price + fluctuation_range
+    #fluctuation_range = 0.0025 * predicted_price  # Lấy 0.1% của giá dự đoán làm khoảng dao động
+    #min_price = predicted_price - fluctuation_range
+    #max_price = predicted_price + fluctuation_range
 
     # Chọn ngẫu nhiên một giá trị trong khoảng dao động
-    price_predict = random.uniform(min_price, max_price)
+    #price_predict = random.uniform(min_price, max_price)
     # gia_tri_2 = round(random.uniform(min_price, max_price), 2)
     # gia_tri_3 = round(random.uniform(min_price, max_price), 2)
     # print(f"{gia_tri_1} - {gia_tri_2} - {gia_tri_3}")
 
-    forecast_price[token] = price_predict
+    forecast_price[token] = predicted_price
 
-    print(f"Predicted_price: {predicted_price}, Min_price: {min_price}, Max_price: {max_price}")
+    # print(f"Predicted_price: {predicted_price}, Min_price: {min_price}, Max_price: {max_price}")
     print(f"Forecasted price for {token}: {forecast_price[token]}")
 
     time_end = datetime.now()
