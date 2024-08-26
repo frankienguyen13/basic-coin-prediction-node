@@ -12,8 +12,8 @@ from sklearn.svm import SVR
 forecast_price = {}
 
 binance_data_path = os.path.join(data_base_path, "binance/futures-klines")
-MAX_DATA_SIZE = 100  # Giới hạn số lượng dữ liệu tối đa khi lưu trữ
-INITIAL_FETCH_SIZE = 100  # Số lượng nến lần đầu tải về
+MAX_DATA_SIZE = 300  # Giới hạn số lượng dữ liệu tối đa khi lưu trữ
+INITIAL_FETCH_SIZE = 200  # Số lượng nến lần đầu tải về
 
 @retrying.retry(wait_exponential_multiplier=1000, wait_exponential_max=10000, stop_max_attempt_number=5)
 def fetch_prices(symbol, interval="1m", limit=100, start_time=None, end_time=None):
