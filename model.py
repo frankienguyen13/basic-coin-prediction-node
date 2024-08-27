@@ -143,8 +143,9 @@ def train_model(token):
     #X, X_test, y, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
      # Initialize and train the SVR model
-    model= linear_model.ElasticNet(alpha=0.5, l1_ratio=0.5)
+    #model= linear_model.ElasticNet(alpha=0.5, l1_ratio=0.5)
     #model = SVR(kernel='rbf')
+    model = linear_model.LinearRegression()
     model.fit(X, y)
     
     next_time_index = np.array([[len(df)]])  # Giá trị thời gian tiếp theo
