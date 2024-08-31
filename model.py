@@ -7,7 +7,7 @@ from config import data_base_path
 import random
 import requests
 import retrying
-
+from sklearn.svm import SVR
 
 forecast_price = {}
 
@@ -144,8 +144,8 @@ def train_model(token):
     
      # Initialize and train the SVR model
     #model= linear_model.ElasticNet(alpha=0.5, l1_ratio=0.5)
-    #model = SVR(kernel='rbf')
-    model = linear_model.LinearRegression()
+    model = SVR(kernel='rbf')
+    #model = linear_model.LinearRegression()
     model.fit(X, y)
     
     next_time_index = np.array([[len(df)]])  # Giá trị thời gian tiếp theo
