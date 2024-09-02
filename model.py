@@ -7,7 +7,7 @@ from config import data_base_path
 import random
 import requests
 import retrying
-from sklearn.ensemble import RandomForestRegressor
+from statsmodels.tsa.arima.model import ARIMA
 #from sklearn.svm import SVR
 
 
@@ -152,10 +152,11 @@ def train_model(token):
     #model = SVR(kernel='rbf')
     #model = linear_model.LinearRegression()
 
-    model = RandomForestRegressor(n_estimators=100, random_state=42)
-    model.fit(X, y)
-    next_time_index = np.array([[len(df)]])  # Giá trị thời gian tiếp theo
-    predicted_price = model.predict(next_time_index)[0]  # Dự đoán giá
+   model = ARIMA(y, order=(5, 1, 0))  # ARIMA(p, d, q) parameters
+   model_fit = model.fit()
+   predicted_price = model_fit.forecast(steps=1)[0]
+    #next_time_index = np.array([[len(df)]])  # Giá trị thời gian tiếp theo
+    #predicted_price = model.predict(next_time_index)[0]  # Dự đoán giá
 
     # fluctuation_range = 0.001 * predicted_price
     # min_price = predicted_price - fluctuation_range
