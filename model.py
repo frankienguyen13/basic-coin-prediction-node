@@ -7,7 +7,9 @@ from config import data_base_path
 import random
 import requests
 import retrying
-from statsmodels.tsa.arima.model import ARIMA
+from sklearn.preprocessing import MinMaxScaler
+from keras.models import Sequential
+from keras.layers import LSTM, Dense
 #from sklearn.svm import SVR
 
 
@@ -123,6 +125,14 @@ def format_data(token):
     else:
         print(f"Required columns are missing in {file_path}. Skipping this file.")
 
+def create_model():
+    model = Sequential()
+    model.add(LSTM(units=50, return_sequences=True, input_shape=(60, 1)))
+    model.add(LSTM(units=50))
+    model.add(Dense(1))
+    model.compile(optimizer='adam', loss='mean_squared_error')
+    return model
+
 def train_model(token):
     # Load the token price data
     price_data = pd.read_csv(os.path.join(data_base_path, f"{token.lower()}_price_data.csv"))
@@ -142,28 +152,24 @@ def train_model(token):
 
     # Prepare data for Linear Regression
     df = df.dropna()  # Loại bỏ các giá trị NaN (nếu có)
-    X = np.array(range(len(df))).reshape(-1, 1)  # Sử dụng chỉ số thời gian làm đặc trưng
-    y = df['close'].values  # Sử dụng giá đóng cửa làm mục tiêu
 
-    #X, X_test, y, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    scaled_data = scaler.fit_transform(df['Close'].values.reshape(-1, 1))
+
+    X_test = []
+    for i in range(60, len(scaled_data)):
+        X_test.append(scaled_data[i-60:i, 0])
     
-     # Initialize and train the SVR model
-    #model= linear_model.ElasticNet(alpha=0.5, l1_ratio=0.5)
-    #model = SVR(kernel='rbf')
-    #model = linear_model.LinearRegression()
+    X_test = np.array(X_test)
+    X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
 
-   model = ARIMA(y, order=(5, 1, 0))  # ARIMA(p, d, q) parameters
-   model_fit = model.fit()
-   predicted_price = model_fit.forecast(steps=1)[0]
-    #next_time_index = np.array([[len(df)]])  # Giá trị thời gian tiếp theo
-    #predicted_price = model.predict(next_time_index)[0]  # Dự đoán giá
-
-    # fluctuation_range = 0.001 * predicted_price
-    # min_price = predicted_price - fluctuation_range
-    # max_price = predicted_price + fluctuation_range
-    # price_predict = random.uniform(min_price, max_price)
+    model = create_model()
+    model.load_weights('model_weights.h5')
+    
+    predicted_price = model.predict(X_test)
+    predicted_price = scaler.inverse_transform(predicted_price)
     forecast_price[token] = predicted_price
-    #print(f"Predicted_price: {predicted_price}, Min_price: {min_price}, Max_price: {max_price}")
     print(f"Forecasted price for {token}: {forecast_price[token]}")
     
 
