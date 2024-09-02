@@ -2,11 +2,12 @@ import os
 import pandas as pd
 from datetime import datetime, timedelta
 import numpy as np
-from sklearn import linear_model
+#from sklearn import linear_model
 from config import data_base_path
 import random
 import requests
 import retrying
+from sklearn.ensemble import RandomForestRegressor
 #from sklearn.svm import SVR
 
 
@@ -134,7 +135,10 @@ def train_model(token):
     price_data.set_index("date", inplace=True)
 
     # Resample the data to 10-minute frequency and compute the mean price
-    df = price_data.resample('10T').mean()
+    if token in ['ARB', 'BNB']:
+        df = price_data.resample('20T').mean()
+    else 
+        df = price_data.resample('10T').mean()
 
     # Prepare data for Linear Regression
     df = df.dropna()  # Loại bỏ các giá trị NaN (nếu có)
@@ -146,9 +150,10 @@ def train_model(token):
      # Initialize and train the SVR model
     #model= linear_model.ElasticNet(alpha=0.5, l1_ratio=0.5)
     #model = SVR(kernel='rbf')
-    model = linear_model.LinearRegression()
+    #model = linear_model.LinearRegression()
+
+    model = RandomForestRegressor(n_estimators=100, random_state=42)
     model.fit(X, y)
-    
     next_time_index = np.array([[len(df)]])  # Giá trị thời gian tiếp theo
     predicted_price = model.predict(next_time_index)[0]  # Dự đoán giá
 
