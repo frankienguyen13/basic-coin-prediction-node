@@ -137,7 +137,7 @@ def train_model(token):
     # Resample the data to 10-minute frequency and compute the mean price
     if token in ['ARB', 'BNB']:
         df = price_data.resample('20T').mean()
-    else 
+    else: 
         df = price_data.resample('10T').mean()
 
     # Prepare data for Linear Regression
