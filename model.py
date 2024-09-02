@@ -7,9 +7,7 @@ from config import data_base_path
 import random
 import requests
 import retrying
-from sklearn.preprocessing import MinMaxScaler
-from keras.models import Sequential
-from keras.layers import LSTM, Dense
+from statsmodels.tsa.holtwinters import ExponentialSmoothing
 #from sklearn.svm import SVR
 
 
@@ -152,23 +150,14 @@ def train_model(token):
 
     # Prepare data for Linear Regression
     df = df.dropna()  # Loại bỏ các giá trị NaN (nếu có)
+    y = df['close'].values  # Target: closing prices
 
+    # Initialize and fit the Exponential Smoothing model
+    model = ExponentialSmoothing(y, trend="add", seasonal=None, seasonal_periods=12)
+    model_fit = model.fit()
 
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    scaled_data = scaler.fit_transform(df['Close'].values.reshape(-1, 1))
+    predicted_price = model_fit.forecast(steps=1)[0]  # Predict next price
 
-    X_test = []
-    for i in range(60, len(scaled_data)):
-        X_test.append(scaled_data[i-60:i, 0])
-    
-    X_test = np.array(X_test)
-    X_test = np.reshape(X_test, (X_test.shape[0], X_test.shape[1], 1))
-
-    model = create_model()
-    model.load_weights('model_weights.h5')
-    
-    predicted_price = model.predict(X_test)
-    predicted_price = scaler.inverse_transform(predicted_price)
     forecast_price[token] = predicted_price
     print(f"Forecasted price for {token}: {forecast_price[token]}")
     
