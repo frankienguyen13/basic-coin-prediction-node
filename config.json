@@ -5,39 +5,12 @@
         "alloraHomeDir": "",
         "gas": "auto",
         "gasAdjustment": 1.5,
-        "nodeRpc": "https://rpc.ankr.com/allora_testnet/23cdbba1da7183932b0d038730cdc9c1b4cc9793428aac5f4b2f9bdf625cb088/",
+        "nodeRpc": "https://rpc.ankr.com/allora_testnet/8990a8fcee21464a09f7c71886bdd684436b22fceb8a42f831068d4c52cde3f3/",
         "maxRetries": 4,
         "delay": 5,
         "submitTx": true
     },
     "worker": [
-        {
-            "topicId": 1,
-            "inferenceEntrypointName": "api-worker-reputer",
-            "loopSeconds": 5,
-            "parameters": {
-                "InferenceEndpoint": "http://inference:8011/inference/{Token}",
-                "Token": "ETH"
-            }
-        },
-        {
-            "topicId": 3,
-            "inferenceEntrypointName": "api-worker-reputer",
-            "loopSeconds": 5,
-            "parameters": {
-                "InferenceEndpoint": "http://inference:8011/inference/{Token}",
-                "Token": "BTC"
-            }
-        },
-        {
-            "topicId": 5,
-            "inferenceEntrypointName": "api-worker-reputer",
-            "loopSeconds": 5,
-            "parameters": {
-                "InferenceEndpoint": "http://inference:8011/inference/{Token}",
-                "Token": "SOL"
-            }
-        },
         {
             "topicId": 7,
             "inferenceEntrypointName": "api-worker-reputer",
