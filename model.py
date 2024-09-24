@@ -8,8 +8,8 @@ import random
 import requests
 import retrying
 #from statsmodels.tsa.holtwinters import ExponentialSmoothing
-#from sklearn.svm import SVR
-from statsmodels.tsa.arima.model import ARIMA
+from sklearn.svm import SVR
+#from statsmodels.tsa.arima.model import ARIMA
 
 forecast_price = {}
 
@@ -150,20 +150,17 @@ def train_model(token):
 
     # Prepare data for Linear Regression
     df = df.dropna()  # Loại bỏ các giá trị NaN (nếu có)
+    X = np.array(range(len(df))).reshape(-1, 1)  # Sử dụng chỉ số thời gian làm đặc trưng
     y = df['close'].values  # Target: closing prices
 
-     # Initialize and fit the Exponential Smoothing model
-    model = ARIMA(y,order=(1, 1, 1))
-    #model = ExponentialSmoothing(y, trend="add", seasonal=None, seasonal_periods=12)
-    model_fit = model.fit()
+    model = SVR()
+    model.fit(X, y)
 
-    forecast = model_fit.forecast(steps=1)
-    predicted_price = forecast[0]
-
-    if token == 'ARB':
-        forecast_price[token] = str(format(predicted_price, ".4f"))
-    else:
-        forecast_price[token] = str(format(predicted_price, ".2f"))
+    next_time_index = np.array([[len(df)]])  # Giá trị thời gian tiếp theo
+    predicted_price = model.predict(next_time_index)[0]  # Dự đoán giá
+    
+    price_predict = predicted_price
+    forecast_price[token] = price_predict
         
     print(f"Forecasted price for {token}: {forecast_price[token]}")
     
