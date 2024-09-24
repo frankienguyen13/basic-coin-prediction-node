@@ -153,7 +153,7 @@ def train_model(token):
     X = np.array(range(len(df))).reshape(-1, 1)  # Sử dụng chỉ số thời gian làm đặc trưng
     y = df['close'].values  # Target: closing prices
 
-    model = SVR()
+    model = SVR(kernel='rbf')
     model.fit(X, y)
 
     next_time_index = np.array([[len(df)]])  # Giá trị thời gian tiếp theo
