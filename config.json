@@ -1,7 +1,7 @@
 {
     "wallet": {
         "addressKeyName": "walletname",
-        "addressRestoreMnemonic": "SEEDPHRASE",
+        "addressRestoreMnemonic": "seedphrase",
         "alloraHomeDir": "",
         "gas": "auto",
         "gasAdjustment": 1.5,
