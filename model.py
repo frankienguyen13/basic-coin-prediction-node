@@ -169,7 +169,7 @@ def train_model(token):
     
 
 def update_data():
-    tokens = ["ETH", "BTC", "SOL", "BNB", "ARB"]
+    tokens = ["ETH", "BNB", "ARB"]
     for token in tokens:
         download_data(token)
         format_data(token)
