@@ -7,10 +7,8 @@ from config import data_base_path
 import random
 import requests
 import retrying
-#from statsmodels.tsa.holtwinters import ExponentialSmoothing
-#from sklearn.svm import SVR
-#from statsmodels.tsa.arima.model import ARIMA
-from xgboost import XGBRegressor
+from sklearn.svm import SVR
+
 
 forecast_price = {}
 
@@ -154,7 +152,7 @@ def train_model(token):
     X = np.array(range(len(df))).reshape(-1, 1)  # Sử dụng chỉ số thời gian làm đặc trưng
     y = df['close'].values  # Target: closing prices
 
-    model = XGBRegressor(n_estimators=100, random_state=42)
+    model = SVR(kernel='rbf')
     model.fit(X, y)
 
     next_time_index = np.array([[len(df)]])  # Giá trị thời gian tiếp theo
