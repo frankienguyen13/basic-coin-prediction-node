@@ -153,7 +153,7 @@ def train_model(token):
     y = df['close'].values  # Target: closing prices
     
     #model = SVR(kernel='poly', degree=3)
-    model = SVR(kernel='sigmoid')
+    model = SVR(kernel='rbf')
     model.fit(X, y)
 
     next_time_index = np.array([[len(df)]])  # Giá trị thời gian tiếp theo
