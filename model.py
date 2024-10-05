@@ -8,8 +8,9 @@ import random
 import requests
 import retrying
 from sklearn.svm import SVR
-#from statsmodels.tsa.arima.model import ARIMA
-#from sklearn.svm import SVC
+from sklearn.linear_model import QuantileRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error
 
 forecast_price = {}
 
@@ -133,37 +134,23 @@ def create_model():
 
 def train_model(token):
     # Load the token price data
-    price_data = pd.read_csv(os.path.join(data_base_path, f"{token.lower()}_price_data.csv"))
-    df = pd.DataFrame()
-
-    # Convert 'date' to datetime
-    price_data["date"] = pd.to_datetime(price_data["date"])
-
-    # Set the date column as the index for resampling
-    price_data.set_index("date", inplace=True)
-
-    # Resample the data to 10-minute frequency and compute the mean price
-    if token in ['ARB', 'BNB']:
-        df = price_data.resample('20T').mean()
-    else: 
-        df = price_data.resample('10T').mean()
-
-    # Prepare data for Linear Regression
-    df = df.dropna()  # Loại bỏ các giá trị NaN (nếu có)
-    X = np.array(range(len(df))).reshape(-1, 1)  # Sử dụng chỉ số thời gian làm đặc trưng
-    y = df['close'].values  # Target: closing prices
+    data = pd.read_csv(os.path.join(data_base_path, f"{token.lower()}_price_data.csv"))
+    X = data[['volume', 'n_trades', 'quote_asset_volume']]  # Replace with your actual features
+    y = data['close']
     
-    #model = SVR(kernel='poly', degree=3)
-    model = SVR(kernel="rbf", C=100, gamma=0.1, epsilon=0.1)
-    model.fit(X, y)
-
-    next_time_index = np.array([[len(df)]])  # Giá trị thời gian tiếp theo
-    predicted_price = model.predict(next_time_index)[0]  # Dự đoán giá
+    # Split the data
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
-    #price_predict = predicted_price
-    forecast_price[token] = predicted_price
-        
-    print(f"Forecasted price for {token}: {forecast_price[token]}")
+    # Train the Quantile Regressor
+    quantile_model = QuantileRegressor(quantile=0.5)  # 0.5 for median
+    quantile_model.fit(X_train, y_train)
+    
+    # Make predictions
+    y_pred = quantile_model.predict(X_test)
+    
+    # Evaluate the model
+    mae = mean_absolute_error(y_test, y_pred)
+    forecast_price[token] = mae
     
 
 def update_data():
