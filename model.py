@@ -134,15 +134,30 @@ def create_model():
 
 def train_model(token):
     # Load the token price data
-    data = pd.read_csv(os.path.join(data_base_path, f"{token.lower()}_price_data.csv"))
-    X = data[['volume', 'n_trades', 'quote_asset_volume']]  # Replace with your actual features
-    y = data['close']
+    price_data = pd.read_csv(f"{token.lower()}_price_data.csv")
+    
+    # Convert 'date' to datetime
+    price_data["date"] = pd.to_datetime(price_data["date"])
+    
+    # Set the date column as the index for resampling
+    price_data.set_index("date", inplace=True)
+    
+    # Resample the data to 10-minute frequency and compute the mean price
+    if token in ['ARB', 'BNB']:
+        df = price_data.resample('20T').mean()
+    else: 
+        df = price_data.resample('10T').mean()
+    
+    # Prepare data for Quantile Regression
+    df = df.dropna()  # Remove NaN values
+    X = np.array(range(len(df))).reshape(-1, 1)  # Use time index as feature
+    y = df['close'].values  # Use closing price as target
     
     # Split the data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
-    # Train the Quantile Regressor
-    quantile_model = QuantileRegressor(quantile=0.5)  # 0.5 for median
+    # Train the Quantile Regressor with 'highs' solver
+    quantile_model = QuantileRegressor(quantile=0.5, solver='highs')
     quantile_model.fit(X_train, y_train)
     
     # Make predictions
@@ -150,7 +165,12 @@ def train_model(token):
     
     # Evaluate the model
     mae = mean_absolute_error(y_test, y_pred)
-    forecast_price[token] = mae
+    print(f'Mean Absolute Error (Quantile Regression): {mae:.2f}')
+    
+    # Predict the next price
+    next_time_index = np.array([[len(df)]])
+    predicted_price = quantile_model.predict(next_time_index)[0]
+    forecast_price[token] = predicted_price
     
 
 def update_data():
