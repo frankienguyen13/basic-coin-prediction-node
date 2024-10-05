@@ -124,14 +124,6 @@ def format_data(token):
     else:
         print(f"Required columns are missing in {file_path}. Skipping this file.")
 
-def create_model():
-    model = Sequential()
-    model.add(LSTM(units=50, return_sequences=True, input_shape=(60, 1)))
-    model.add(LSTM(units=50))
-    model.add(Dense(1))
-    model.compile(optimizer='adam', loss='mean_squared_error')
-    return model
-
 def train_model(token):
     # Load the token price data
     price_data = pd.read_csv(os.path.join(data_base_path, f"{token.lower()}_price_data.csv"))
