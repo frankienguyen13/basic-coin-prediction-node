@@ -7,9 +7,9 @@ from config import data_base_path
 import random
 import requests
 import retrying
-#from sklearn.svm import SVR
+from sklearn.svm import SVR
 #from statsmodels.tsa.arima.model import ARIMA
-from sklearn.svm import SVC
+#from sklearn.svm import SVC
 
 forecast_price = {}
 
@@ -154,7 +154,7 @@ def train_model(token):
     y = df['close'].values  # Target: closing prices
     
     #model = SVR(kernel='poly', degree=3)
-    model = SVC()
+    model = SVR(kernel="rbf", C=100, gamma=0.1, epsilon=0.1)
     model.fit(X, y)
 
     next_time_index = np.array([[len(df)]])  # Giá trị thời gian tiếp theo
