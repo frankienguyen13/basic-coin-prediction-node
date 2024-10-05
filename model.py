@@ -135,7 +135,10 @@ def train_model(token):
     price_data.set_index("date", inplace=True)
     
     # Resample the data to 10-minute frequency and compute the mean price
-    df = price_data.resample('10T').mean()
+    if token in ['ARB', 'BNB']:
+        df = price_data.resample('20T').mean()
+    else: 
+        df = price_data.resample('10T').mean()
     
     # Prepare data for LSTM
     df = df.dropna()  # Remove NaN values
