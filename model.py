@@ -7,10 +7,10 @@ from config import data_base_path
 import random
 import requests
 import retrying
-from sklearn.svm import SVR
-from sklearn.linear_model import QuantileRegressor
+import tensorflow as tf
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_absolute_error
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error
 
 forecast_price = {}
 
@@ -125,7 +125,7 @@ def format_data(token):
         print(f"Required columns are missing in {file_path}. Skipping this file.")
 
 def train_model(token):
-    # Load the token price data
+     # Load the token price data
     price_data = pd.read_csv(os.path.join(data_base_path, f"{token.lower()}_price_data.csv"))
     
     # Convert 'date' to datetime
@@ -135,34 +135,57 @@ def train_model(token):
     price_data.set_index("date", inplace=True)
     
     # Resample the data to 10-minute frequency and compute the mean price
-    if token in ['ARB', 'BNB']:
-        df = price_data.resample('20T').mean()
-    else: 
-        df = price_data.resample('10T').mean()
+    df = price_data.resample('10T').mean()
     
-    # Prepare data for Quantile Regression
+    # Prepare data for LSTM
     df = df.dropna()  # Remove NaN values
-    X = np.array(range(len(df))).reshape(-1, 1)  # Use time index as feature
-    y = df['close'].values  # Use closing price as target
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    scaled_data = scaler.fit_transform(df[['close']])
+    
+    # Create sequences for LSTM
+    def create_sequences(data, seq_length):
+        sequences = []
+        for i in range(len(data) - seq_length):
+            seq = data[i:i + seq_length]
+            sequences.append(seq)
+        return np.array(sequences)
+    
+    seq_length = 10  # Adjust as needed
+    sequences = create_sequences(scaled_data, seq_length)
+    X = sequences[:, :-1]
+    y = sequences[:, -1]
     
     # Split the data
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     
-    # Train the Quantile Regressor with 'highs' solver
-    quantile_model = QuantileRegressor(quantile=0.5, solver='highs')
-    quantile_model.fit(X_train, y_train)
+    # Build the LSTM model
+    model = tf.keras.Sequential([
+        tf.keras.layers.LSTM(50, return_sequences=True, input_shape=(seq_length-1, 1)),
+        tf.keras.layers.LSTM(50),
+        tf.keras.layers.Dense(1)
+    ])
+    
+    model.compile(optimizer='adam', loss='mean_squared_error')
+    
+    # Train the model
+    model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test))
     
     # Make predictions
-    y_pred = quantile_model.predict(X_test)
+    y_pred = model.predict(X_test)
+    y_pred = scaler.inverse_transform(y_pred)
+    y_test = scaler.inverse_transform(y_test)
     
     # Evaluate the model
-    mae = mean_absolute_error(y_test, y_pred)
-    print(f'Mean Absolute Error (Quantile Regression): {mae:.2f}')
+    mse = mean_squared_error(y_test, y_pred)
+    print(f'Mean Squared Error (LSTM): {mse:.2f}')
     
     # Predict the next price
-    next_time_index = np.array([[len(df)]])
-    predicted_price = quantile_model.predict(next_time_index)[0]
+    last_sequence = scaled_data[-seq_length:]
+    next_sequence = model.predict(last_sequence[np.newaxis, :-1])
+    predicted_price = scaler.inverse_transform(next_sequence)[0][0]
     forecast_price[token] = predicted_price
+    
+    print(f"Forecasted price for {token}: {forecast_price[token]}")
     
 
 def update_data():
