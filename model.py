@@ -134,7 +134,7 @@ def create_model():
 
 def train_model(token):
     # Load the token price data
-    price_data = pd.read_csv(f"{token.lower()}_price_data.csv")
+    price_data = pd.read_csv(os.path.join(data_base_path, f"{token.lower()}_price_data.csv"))
     
     # Convert 'date' to datetime
     price_data["date"] = pd.to_datetime(price_data["date"])
